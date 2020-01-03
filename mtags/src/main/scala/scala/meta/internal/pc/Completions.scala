@@ -640,6 +640,10 @@ trait Completions { this: MetalsGlobal =>
         }
       }
     }
+    lazy val line =
+      try {
+        text.split(System.lineSeparator())(pos.line - 1)
+      } catch { case _: Throwable => "" }
     enclosing match {
       case ExhaustiveMatch(pos) :: tail =>
         pos
@@ -664,8 +668,39 @@ trait Completions { this: MetalsGlobal =>
         CompletionPosition.New
       case head :: tail if !head.pos.includes(pos) =>
         inferCompletionPosition(pos, text, tail, completions, editRange)
+      case _
+          if line.matches("^\\s*\\/\\*\\*\\s*$") => // if the line starts with /**
+        val associatedDef = onUnitOf(pos.source) { unit =>
+          new AssociatedMethodDefFinder(pos).findAssociatedDef(unit.body)
+        }
+        associatedDef
+          .map(dd => CompletionPosition.Scaladoc(editRange, dd))
+          .getOrElse(CompletionPosition.None)
       case _ =>
         CompletionPosition.None
+    }
+  }
+
+  /**
+   * Find a method definition right after the given position.
+   */
+  class AssociatedMethodDefFinder(pos: Position) extends Traverser {
+    private var defs: List[DefDef] = Nil
+
+    def findAssociatedDef(root: Tree): Option[DefDef] = {
+      defs = Nil
+      traverse(root)
+      defs.sortBy(_.pos.point).headOption
+    }
+    override def traverse(t: Tree): Unit = {
+      t match {
+        case defdef @ DefDef(_, _, _, _, _, _) if defdef.pos.line >= pos.line =>
+          defs ::= defdef
+          super.traverse(t)
+        case _ if treePos(t).includes(pos) =>
+          super.traverse(t)
+        case _ =>
+      }
     }
   }
 
@@ -1630,6 +1665,38 @@ trait Completions { this: MetalsGlobal =>
           alternatives(head.sym.tpe.member(termNames.unapply)) ||
           alternatives(head.sym.tpe.member(termNames.unapplySeq))
         }
+      }
+    }
+
+    /**
+     * A scaladoc completion to generate an scaladoc for the given definition.
+     */
+    case class Scaladoc(
+        editRange: l.Range,
+        associatedDef: DefDef
+    ) extends CompletionPosition {
+      override def contribute: List[Member] = {
+        val params = associatedDef.vparamss.flatten.zipWithIndex
+          .map {
+            case (valdef, idx) => {
+              if (idx == 0 && clientSupportsSnippets)
+                s"* @param ${valdef.name} $$0"
+              else s"* @param ${valdef.name}"
+            }
+          }
+          .mkString("\n\t")
+        val newText = new l.TextEdit(
+          editRange,
+          Seq("", "*", params, "*/").mkString("\n\t")
+        )
+        List(
+          new TextEditMember(
+            "Scaladoc Comment",
+            newText,
+            completionsSymbol(associatedDef.name.toString()),
+            label = Some("Scaladoc Comment")
+          )
+        )
       }
     }
   }
