@@ -1,13 +1,10 @@
 package tests.pc
 
 import tests.BaseCompletionSuite
-import tests.BuildInfoVersions
 
 class CompletionArgSuite extends BaseCompletionSuite {
 
-  override def excludedScalaVersions: Set[String] =
-    BuildInfoVersions.scala3Versions.toSet
-
+  // methodSym = NoSymbol
   check(
     "arg",
     s"""|object Main {
@@ -34,6 +31,8 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(3)
   )
 
+  // Main arg2
+  // :: scala.collection.immutable
   check(
     "arg2",
     s"""|object Main {
@@ -47,6 +46,7 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(3)
   )
 
+  // age = : Int
   def user: String =
     """|case class User(
        |    name: String = "John",
@@ -71,6 +71,7 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(4)
   )
 
+  // age = : Int
   check(
     "arg4",
     s"""|
@@ -86,6 +87,7 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(3)
   )
 
+  // obtained empty
   check(
     "arg5",
     s"""|
@@ -102,6 +104,7 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(4)
   )
 
+  // obtained empty
   check(
     "arg6",
     s"""|
@@ -117,6 +120,7 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(3)
   )
 
+  // x = : A instead of x = : Int
   check(
     "arg7",
     s"""|
@@ -130,6 +134,8 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(2)
   )
 
+  // Main arg8
+  // :: scala.collection.immutable
   check(
     "arg8",
     s"""|
@@ -144,6 +150,7 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(3)
   )
 
+  // No mehotd symbol
   check(
     "arg9",
     // `until` has multiple implicit conversion alternatives
@@ -159,6 +166,7 @@ class CompletionArgSuite extends BaseCompletionSuite {
     topLines = Option(3)
   )
 
+  // args contains something invalid
   check(
     "arg10",
     s"""|$user
