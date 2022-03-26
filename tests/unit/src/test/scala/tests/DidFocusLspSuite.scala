@@ -124,7 +124,10 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
       // Focus before compilation of A.scala is complete.
       didCompile <- server.didFocus("b/src/main/scala/b/B.scala")
       _ <- didSaveA
-      _ = assert(didCompile == Compiled)
+      _ = assert(
+        didCompile == Compiled,
+        s"focus result should be 'Compiiled', actual: ${didCompile}"
+      )
       _ = assertNoDiff(
         client.workspaceDiagnostics,
         """|b/src/main/scala/b/B.scala:3:16: error: type mismatch;
