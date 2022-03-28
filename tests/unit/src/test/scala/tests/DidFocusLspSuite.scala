@@ -72,6 +72,22 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
       )
     } yield ()
   }
+}
+
+// https://github.com/scalameta/metals/issues/497
+class DidFocusWhileCompilingLspSuite extends BaseLspSuite("did-focus-while-compiling") {
+  var fakeTime: FakeTime = _
+  override def time: Time = fakeTime
+
+  // sleep 10s during the compilation, so that we can make sure
+  // invoking `didFocus` during compilation.
+  override def beforeEach(context: BeforeEach): Unit = {
+    fakeTime = new FakeTime()
+    onStartCompilation = () => {
+      Thread.sleep(10000)
+    }
+    super.beforeEach(context)
+  }
 
   test("497") {
     cleanWorkspace()
@@ -129,7 +145,7 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
       // Focus before compilation of A.scala is complete.
       didCompile <- server.didFocus("b/src/main/scala/b/B.scala")
       _ <- didSaveA
-      _ = assert(didCompile == Compiled, s"didFocus result: ${didCompile}")
+      _ = assert(didCompile == Compiled, s"expect 'Compiled', actual: ${didCompile}")
       _ = assertNoDiff(
         client.workspaceDiagnostics,
         """|b/src/main/scala/b/B.scala:3:16: error: type mismatch;
@@ -141,4 +157,5 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
       )
     } yield ()
   }
+
 }
