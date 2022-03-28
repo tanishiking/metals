@@ -13,7 +13,10 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
 
   val delayedCompile: FunFixture[Unit] = FunFixture[Unit](
     setup = { test =>
-      onStartCompilation = () => Thread.sleep(5000)
+      onStartCompilation = () => {
+        println("Let's sleep 10 seconds!")
+        Thread.sleep(10000)
+      }
     },
     teardown = { _ => { onStartCompilation = () => () } }
   )
