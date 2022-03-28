@@ -8,18 +8,12 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
   override def time: Time = fakeTime
   override def beforeEach(context: BeforeEach): Unit = {
     fakeTime = new FakeTime()
+    onStartCompilation = () => {
+      println("Let's sleep 10 seconds!")
+      Thread.sleep(10000)
+    }
     super.beforeEach(context)
   }
-
-  val delayedCompile: FunFixture[Unit] = FunFixture[Unit](
-    setup = { test =>
-      onStartCompilation = () => {
-        println("Let's sleep 10 seconds!")
-        Thread.sleep(10000)
-      }
-    },
-    teardown = { _ => { onStartCompilation = () => () } }
-  )
 
   test("is-compiled") {
     cleanWorkspace()
@@ -79,7 +73,7 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
     } yield ()
   }
 
-  delayedCompile.test("497") { _ =>
+  test("497") {
     cleanWorkspace()
     for {
       _ <- initialize(
