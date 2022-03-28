@@ -2,16 +2,13 @@ package tests
 
 import scala.meta.internal.metals.DidFocusResult._
 import scala.meta.internal.metals.Time
+import scala.concurrent.Future
 
 class DidFocusLspSuite extends BaseLspSuite("did-focus") {
   var fakeTime: FakeTime = _
   override def time: Time = fakeTime
   override def beforeEach(context: BeforeEach): Unit = {
     fakeTime = new FakeTime()
-    onStartCompilation = () => {
-      println("Let's sleep 10 seconds!")
-      Thread.sleep(10000)
-    }
     super.beforeEach(context)
   }
 
@@ -75,7 +72,8 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
 }
 
 // https://github.com/scalameta/metals/issues/497
-class DidFocusWhileCompilingLspSuite extends BaseLspSuite("did-focus-while-compiling") {
+class DidFocusWhileCompilingLspSuite
+    extends BaseLspSuite("did-focus-while-compiling") {
   var fakeTime: FakeTime = _
   override def time: Time = fakeTime
 
@@ -84,6 +82,7 @@ class DidFocusWhileCompilingLspSuite extends BaseLspSuite("did-focus-while-compi
   override def beforeEach(context: BeforeEach): Unit = {
     fakeTime = new FakeTime()
     onStartCompilation = () => {
+      println("Let's sleep 10s")
       Thread.sleep(10000)
     }
     super.beforeEach(context)
@@ -142,10 +141,14 @@ class DidFocusWhileCompilingLspSuite extends BaseLspSuite("did-focus-while-compi
       didSaveA = server.didSave("a/src/main/scala/a/A.scala")(
         _.replace("Int", "String")
       )
+      _ <- Future { Thread.sleep(5000) }
       // Focus before compilation of A.scala is complete.
       didCompile <- server.didFocus("b/src/main/scala/b/B.scala")
       _ <- didSaveA
-      _ = assert(didCompile == Compiled, s"expect 'Compiled', actual: ${didCompile}")
+      _ = assert(
+        didCompile == Compiled,
+        s"expect 'Compiled', actual: ${didCompile}"
+      )
       _ = assertNoDiff(
         client.workspaceDiagnostics,
         """|b/src/main/scala/b/B.scala:3:16: error: type mismatch;

@@ -1151,6 +1151,19 @@ class MetalsLanguageServer(
                     compilations.previouslyCompiled.toList
                   )
 
+              println(
+                s"isAffectedbyCurrentCompilation: ${isAffectedByCurrentCompilation}"
+              )
+              println(
+                s"isAffectedbyLastCompilation: ${isAffectedByLastCompilation}"
+              )
+              println(
+                s"compilations.currentlyCompiling: ${compilations.currentlyCompiling.toList}"
+              )
+              println(
+                s"compilations.previouslyCompiled: ${compilations.previouslyCompiled.toList}"
+              )
+
               val needsCompile =
                 isAffectedByCurrentCompilation || isAffectedByLastCompilation
               if (needsCompile) {

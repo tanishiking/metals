@@ -211,7 +211,6 @@ final class Compilations(
         CancelableFuture.sequence(futures).map(_.flatten.toMap)
     }
   }
-
   private def compile(
       connection: BuildServerConnection,
       targets: Seq[b.BuildTargetIdentifier]
