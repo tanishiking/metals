@@ -22,7 +22,8 @@ final class Compilations(
     languageClient: MetalsLanguageClient,
     refreshTestSuites: () => Unit,
     isCurrentlyFocused: b.BuildTargetIdentifier => Boolean,
-    compileWorksheets: Seq[AbsolutePath] => Future[Unit]
+    compileWorksheets: Seq[AbsolutePath] => Future[Unit],
+    onStartCompilation: () => Unit
 )(implicit ec: ExecutionContext) {
 
   // we are maintaining a separate queue for cascade compilation since those must happen ASAP
@@ -221,6 +222,7 @@ final class Compilations(
 
     val result = compilation.asScala
       .andThen { case result =>
+        onStartCompilation()
         updateCompiledTargetState(result)
 
         // See https://github.com/scalacenter/bloop/issues/1067

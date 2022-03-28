@@ -10,6 +10,14 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
     fakeTime = new FakeTime()
     super.beforeEach(context)
   }
+
+  val delayedCompile: FunFixture[Unit] = FunFixture[Unit](
+    setup = { test =>
+      onStartCompilation = () => Thread.sleep(5000)
+    },
+    teardown = { _ => { onStartCompilation = () => () } }
+  )
+
   test("is-compiled") {
     cleanWorkspace()
     for {
@@ -68,7 +76,7 @@ class DidFocusLspSuite extends BaseLspSuite("did-focus") {
     } yield ()
   }
 
-  test("497") {
+  delayedCompile.test("497") { _ =>
     cleanWorkspace()
     for {
       _ <- initialize(
