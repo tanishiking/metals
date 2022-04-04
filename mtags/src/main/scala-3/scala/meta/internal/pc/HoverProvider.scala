@@ -8,6 +8,7 @@ import scala.meta.internal.mtags.MtagsEnrichments.*
 import scala.meta.internal.pc.printer.MetalsPrinter
 import scala.meta.pc.OffsetParams
 
+import dotty.tools.dotc.ast.tpd
 import dotty.tools.dotc.ast.tpd.*
 import dotty.tools.dotc.core.Contexts.*
 import dotty.tools.dotc.core.Flags
@@ -23,6 +24,7 @@ import dotty.tools.dotc.interactive.InteractiveDriver
 import dotty.tools.dotc.util.ParsedComment
 import dotty.tools.dotc.util.SourcePosition
 import org.eclipse.lsp4j.Hover
+import dotty.tools.dotc.interactive.SourceTree
 
 object HoverProvider:
 
@@ -37,6 +39,7 @@ object HoverProvider:
     given ctx: Context = driver.currentCtx
     val pos = driver.sourcePosition(params)
     val trees = driver.openedTrees(uri)
+    val source = driver.openedFiles.get(uri)
 
     def typeFromPath(path: List[Tree]) =
       if path.isEmpty then NoType else path.head.tpe
@@ -49,13 +52,24 @@ object HoverProvider:
     val exprTp = typeFromPath(enclosing)
     val exprTpw = exprTp.widenTermRefExpr
 
+    def isHoveringName(path: List[Tree], sourcePos: SourcePosition): Boolean =
+      def contains(tree: Tree): Boolean = tree match
+        case tree: (NameTree | Import) =>
+          source.fold(false) { s =>
+            SourceTree(tree, s).namePos.contains(sourcePos)
+          }
+        case app: (Apply | TypeApply) => contains(app.fun)
+        case _ => false
+      end contains
+      contains(Interactive.enclosingTree(path))
+
     if tp.isError || tpw == NoType || tpw.isError || path.isEmpty then
       ju.Optional.empty()
     else
       Interactive.enclosingSourceSymbols(enclosing, pos) match
         case Nil =>
           ju.Optional.empty()
-        case symbols @ (symbol :: _) =>
+        case symbols @ (symbol :: _) if isHoveringName(enclosing, pos) =>
           val docComments =
             symbols.flatMap(ParsedComment.docOf(_))
           val printerContext =
@@ -105,6 +119,7 @@ object HoverProvider:
             case _ =>
               ju.Optional.empty
           end match
+        case List(_, _*) => ju.Optional.empty()
     end if
   end hover
 
