@@ -6,6 +6,9 @@ import dotty.tools.dotc.core.Contexts.*
 import dotty.tools.dotc.core.CyclicReference
 import dotty.tools.dotc.core.Symbols.*
 import dotty.tools.dotc.interactive.Interactive
+import dotty.tools.dotc.util.SourcePosition
+import dotty.tools.dotc.util.SourceFile
+import dotty.tools.dotc.interactive.SourceTree
 
 object MetalsInteractive:
 
@@ -88,5 +91,40 @@ object MetalsInteractive:
       )
     case _ :: rest =>
       contextOfStat(rest, stat, exprOwner, ctx)
+
+  /**
+   * Check if the given `sourcePos` is on the name of enclosing tree.
+   * ```
+   * // For example, if the postion is on `foo`, returns true
+   * def foo(x: Int) = { ... }
+   *      ^
+   *
+   * // On the other hand, it points to non-name position, return false.
+   * def foo(x: Int) = { ... }
+   *  ^
+   * ```
+   * @param path - path to the position given by `Interactive.pathTo`
+   */
+  def isOnName(
+      path: List[Tree],
+      source: SourceFile,
+      sourcePos: SourcePosition
+  )(using Context): Boolean =
+    def contains(tree: Tree): Boolean = tree match
+      case tree: NameTree =>
+        SourceTree(tree, source).namePos.contains(sourcePos)
+      // TODO: check the positions for NamedArg and Import
+      case _: NamedArg => true
+      case _: Import => true
+      case app: (Apply | TypeApply) => contains(app.fun)
+      case _ => false
+    end contains
+
+    val enclosing = path
+      .dropWhile(t => !t.symbol.exists && !t.isInstanceOf[NamedArg])
+      .headOption
+      .getOrElse(EmptyTree)
+    contains(enclosing)
+  end isOnName
 
 end MetalsInteractive

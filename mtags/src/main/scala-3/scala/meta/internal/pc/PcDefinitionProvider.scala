@@ -57,7 +57,16 @@ class PcDefinitionProvider(
       Interactive.pathTo(driver.openedTrees(uri), pos)(using driver.currentCtx)
     given ctx: Context = driver.localContext(params)
     val indexedContext = IndexedContext(ctx)
-    findDefinitions(tree, path, pos, driver, indexedContext)
+
+    val shouldFindDefinition = driver.openedFiles
+      .get(uri)
+      .map { source =>
+        MetalsInteractive.isOnName(path, source, pos)
+      }
+      .getOrElse(false)
+    if shouldFindDefinition then
+      findDefinitions(tree, path, pos, driver, indexedContext)
+    else DefinitionResultImpl.empty
   end definitions
 
   private def findDefinitions(

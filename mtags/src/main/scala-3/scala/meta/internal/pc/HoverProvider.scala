@@ -51,42 +51,11 @@ object HoverProvider:
     val exprTp = typeFromPath(enclosing)
     val exprTpw = exprTp.widenTermRefExpr
 
-    /**
-     * Check if the given `sourcePos` is on the name of enclosing tree.
-     * ```
-     * // For example, if the postion is on `foo`, returns true
-     * def foo(x: Int) = { ... }
-     *      ^
-     *
-     * // On the other hand, it points to non-name position, return false.
-     * def foo(x: Int) = { ... }
-     *  ^
-     * ```
-     * @param path - path to the position given by `Interactive.pathTo`
-     */
-    def isHoveringOnName(path: List[Tree], sourcePos: SourcePosition): Boolean =
-      def contains(tree: Tree): Boolean = tree match
-        case tree: NameTree =>
-          source.fold(false) { s =>
-            SourceTree(tree, s).namePos.contains(sourcePos)
-          }
-        // TODO: check the positions for NamedArg and Import
-        case _: NamedArg => true
-        case _: Import => true
-        case app: (Apply | TypeApply) => contains(app.fun)
-        case _ => false
-      end contains
-
-      val enclosing = path
-        .dropWhile(t => !t.symbol.exists && !t.isInstanceOf[NamedArg])
-        .headOption
-        .getOrElse(EmptyTree)
-      contains(enclosing)
-    end isHoveringOnName
-
     if tp.isError || tpw == NoType || tpw.isError || path.isEmpty ||
-      (pos.isPoint // don't check isHoveringOnName for RangeHover
-        && !isHoveringOnName(enclosing, pos))
+      (pos.isPoint // don't check isOnName for RangeHover
+        && source
+          .map(s => !MetalsInteractive.isOnName(enclosing, s, pos))
+          .getOrElse(false))
     then ju.Optional.empty()
     else
       Interactive.enclosingSourceSymbols(enclosing, pos) match
