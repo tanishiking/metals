@@ -158,16 +158,11 @@ final class DefinitionProvider(
         semanticdbs
           .textDocument(source)
           .documentIncludingStale
-      posOcc = positionOccurrence(
+      symbolOccurrence <- positionOccurrence(
         source,
         dirtyPosition,
         currentDocument
-      )
-      symbolOccurrence <- {
-        def mtagsOccurrence =
-          fromMtags(source, dirtyPosition)
-        posOcc.occurrence.orElse(mtagsOccurrence)
-      }
+      ).occurrence
     } yield (symbolOccurrence, currentDocument)
   }
 
