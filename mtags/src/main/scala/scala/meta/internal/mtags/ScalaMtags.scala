@@ -109,16 +109,18 @@ class ScalaMtags(val input: Input.VirtualFile, dialect: Dialect)
           paramss: List[List[Term.Param]],
           kind: Kind,
           overloads: OverloadDisambiguator
-      ): Unit = {
+      ): String = {
         val old = myCurrentTree
         myCurrentTree = member
         val disambiguator = overloads.disambiguator(name.value)
-        withOwner() {
-          method(name, disambiguator, kind, 0)
+        val methodSym = withOwner() {
+          val methodSym = method(name, disambiguator, kind, 0)
           enterTypeParameters(tparams)
           enterTermParameters(paramss, isPrimaryCtor = false)
+          methodSym
         }
         myCurrentTree = old
+        methodSym
       }
       def enterGivenAlias(
           name: String,
@@ -283,17 +285,16 @@ class ScalaMtags(val input: Input.VirtualFile, dialect: Dialect)
             }
           }
         case t: Defn.ExtensionGroup =>
-          // t.params are ignored - don't know which symbol/owner they should have
-          // need to wait for https://github.com/lampepfl/dotty/issues/11690
+          val extensionParamss = t.paramss.flatten.map(p => p.name)
           val (owner, overloads) =
             if (isPackageOwner)
               topleveSourceData
             else
               (currentOwner, new OverloadDisambiguator())
 
-          def addDefnDef(t: Defn.Def): Unit =
+          def addDefnDef(t: Defn.Def): Unit = {
             withOwner(owner) {
-              disambiguatedMethod(
+              val methodSym = disambiguatedMethod(
                 t,
                 t.name,
                 Nil,
@@ -301,10 +302,29 @@ class ScalaMtags(val input: Input.VirtualFile, dialect: Dialect)
                 Kind.CONSTRUCTOR,
                 overloads
               )
+              // Register extension parameters for each extension methods
+              // For example, `s` has two symbols
+              // - ...package.asInt().(s) and
+              // - ...package.double().(s)
+              // ```
+              // package example
+              // extension (s: String) {
+              //   def asInt: Int = s.toInt
+              //   def double: String = s * 2
+              // end extension
+              // ```
+              // see: https://github.com/scalameta/scalameta/issues/2443
+              //      https://github.com/lampepfl/dotty/issues/11690
+              withOwner(methodSym) {
+                extensionParamss.foreach { name =>
+                  super.param(name, Kind.PARAMETER, 0)
+                }
+              }
             }
-          def addDeclDef(t: Decl.Def): Unit =
+          }
+          def addDeclDef(t: Decl.Def): Unit = {
             withOwner(owner) {
-              disambiguatedMethod(
+              val methodSym = disambiguatedMethod(
                 t,
                 t.name,
                 Nil,
@@ -312,7 +332,14 @@ class ScalaMtags(val input: Input.VirtualFile, dialect: Dialect)
                 Kind.CONSTRUCTOR,
                 overloads
               )
+              withOwner(methodSym) {
+                extensionParamss.foreach { name =>
+                  super.param(name, Kind.PARAMETER, 0)
+                }
+              }
             }
+
+          }
 
           t.body match {
             case block: Term.Block =>
