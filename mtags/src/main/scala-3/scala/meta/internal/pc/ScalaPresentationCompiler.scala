@@ -171,9 +171,15 @@ case class ScalaPresentationCompiler(
   def implementAbstractMembers(
       params: OffsetParams
   ): CompletableFuture[ju.List[l.TextEdit]] =
-    CompletableFuture.completedFuture(
+    compilerAccess.withNonInterruptableCompiler(
+      List.empty[l.TextEdit].asJava,
+      params.token
+    ) { access =>
+      val driver = access.compiler()
+      ImplementAbstractMembersProvider.implementAll(driver, params)
+
       List.empty[l.TextEdit].asJava
-    )
+    }
 
   override def insertInferredType(
       params: OffsetParams

@@ -1,0 +1,13 @@
+- Get the typed template tree for the given position
+- List all the members of the given "Template"
+- filter `isOverridableMethod`
+  - https://github.com/Duhemm/metals/blob/138b581f1e0a625146e85f0007d67274aeb99f55/mtags/src/main/scala-2/scala/meta/internal/pc/completions/OverrideCompletions.scala#L163-L176
+- for each symbol
+  - filterText / insertText
+    - if startswith `o`, add `override`
+    - modifiers
+    - keyword (var / val / def)
+    - signature
+      - signature printer implementation / shortType ...
+  - auto import
+    - 
