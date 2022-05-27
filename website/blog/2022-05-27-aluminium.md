@@ -7,11 +7,11 @@ authorImageURL: https://github.com/tanishiking.png
 
 We're happy to announce the release of Metals v0.11.6, which 
 
-- reduce memory usage in large projects
-- add override completion for Scala3
-- improve scaladoc support both in Scala2 and Scala3
-- provide better UX in test explorer
-- support for Scala 3.1.3-RC3 and RC4
+- reduces memory usage in large projects
+- adds override completion for Scala3
+- improves scaladoc support in both Scala2 and Scala3
+- provides better UX in the test explorer
+- supports for Scala 3.1.3-RC3 and RC4
 
 <table>
 <tbody>
@@ -47,31 +47,30 @@ give Metals a try!
 
 ## Reduce file watcher memory usage
 Previously, Metals consumed a huge amount of memory for file watchers in large projects, especially on macOS.
-Now, Metals uses a memory-efficient way to watch files to detect changes and consumes less memory.
+Now, Metals uses a memory-efficient way to watch files to detect changes and consume less memory.
 
 For more technical details, see the original PR: [\#3758](https://github.com/scalameta/metals/pull/3758).
 
 ## [Scala3] Override Completions
-Override completions for Scala3 is available with Metals 0.11.6!
-
+Override completions for Scala3 are now available with Metals 0.11.6!
 Now, it's possible to implement methods from the super class quite easily in Scala3.
 
 ![override-completion](https://i.imgur.com/Go3sMxy.gif)
 
 ## [Scala3] Show scaladoc on hover for Scala 3 project
-Now, Metals shows the scaladoc on hover for Scala3 project. (Before this release, Metals unable to show the scaladoc for the symbols from third-party modules).
+Now, Metals shows the scaladoc on hover for Scala3 projects. (Before this release, Metals was unable to show the scaladoc for the symbols from third-party modules).
 
 ![hover-scala3](https://i.imgur.com/Svzq5DD.png)
 
 ### [Scala3] Support `completionItem/resolve`
-Now, in Scala 3 we get scaladoc and shows default values when moving accross completions. 
+Now, in Scala 3 we get scaladoc that shows the default values when moving across completions. 
 
 ![completion-item-resolve](https://i.imgur.com/Tz6AOsx.gif)
 
 
 ## Show parent scaladoc if implementation is returning empty
 
-Scaladocs can be inspected whenever you hover, use a completion or signature help. Up until recently we only showed you the documentation if the exact method you are using had the scaladocs written, which meant that if you overrode a method and didn't add the scaladoc comments again we would not show you any documentation. One example of such method could `headOption` on a `List`.
+Scaladocs can be inspected whenever you hover, use a completion or signature help. Up until recently we only showed you the documentation if the exact method you are using had the scaladocs written, which meant that if you overrode a method and didn't add the scaladoc comments again we would not show you any documentation. One example of such method is `headOption` on `List`.
 
  From this release we will also search the parent method in case the current method's scaladoc are empty. 
 
@@ -79,13 +78,12 @@ Scaladocs can be inspected whenever you hover, use a completion or signature hel
 
 As mentioned in the previous paragraph, Metals can show you documentation in three different places. That, however, was true only for Scala 2 previously. In this release, we will now show you proper documentation whenever invoking signature help.
 
-As a remainder, signature help is used to indicate what parameters can be used in a method. It should pop up automatically after writing `(`, but you can also invoke it manually. In VS Code that takes the form of `editor.action.triggerParameterHints` command, which can also be bound to a shortcut and by default is.
-
+As a reminder, signature help is used to indicate what parameters can be used in a method. It should pop up automatically after writing `(`, but you can also invoke it manually. In VS Code that takes the form of `editor.action.triggerParameterHints` command, which can also be bound to a shortcut and by default is.
 
 ## [MUnit] Test Explorer can find helper methods from parent classes
 
-MUnit allows to use [helper functions](https://scalameta.org/munit/docs/tests.html#declare-tests-inside-a-helper-function) when declaring  tests. Very often those helper methods are extracted to some parent classes which are extended by many test suites.  
-Now, Metals can find usages of those helper methods and display them in Test Explorer.  
+MUnit allows to use [helper functions](https://scalameta.org/munit/docs/tests.html#declare-tests-inside-a-helper-function) when declaring tests. Very often those helper methods are extracted to some parent classes which are extended by many test suites.
+Now, Metals can find usages of those helper methods and display them in Test Explorer.
 
 This feature is available for Bloop and SBT 1.7.0-M2 or later.
 
@@ -94,13 +92,13 @@ This feature is available for Bloop and SBT 1.7.0-M2 or later.
 ## Support Cats Effect stacktraces in stacktrace analyzer
 
 Cats Effect offers [asynchronous stack tracing](https://typelevel.org/cats-effect/docs/tracing#asynchronous-stack-tracing) which augments exceptions with additional information.  
-Now, Stacktrace Analyzer is able to recognize CE's stacktraces and provide link to location in code. Say no to tedious debugging when you have only stacktrace from logs!
+Now, Stacktrace Analyzer is able to recognize CE's stacktraces and provide link to location in code. Say no to tedious debugging when you have only stacktrace from the logs!
 
 ![cats-effect-stacktraces](https://imgur.com/5fMvcYd.gif)
 
 
 ## Improve implement all completion and code action
-Previously, when we invoke implement all completion and code action, Metals fills with something like `x$0` for Java parameter names. Now, Metals fills the correct parameter names for Java parameters.
+Previously, when we invoked the "implement all members" completion and code action, Metals used `x$0` for Java parameter names. Now, Metals fills these with the correct parameter names.
  
 
 ## Support for Scala 3.1.3-RC4, 3.1.3-RC3
