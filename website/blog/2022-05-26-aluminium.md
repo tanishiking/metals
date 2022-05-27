@@ -47,17 +47,17 @@ give Metals a try!
 
 
 ## Reduce file watcher memory usage
-Previously, Metals uses `FileTreeRepository` of [swoval](https://github.com/swoval/swoval) for a file watcher, that maintains an in memory cache of some subset of the file system.
-Now, Metals uses `PathWatcher` of [swoval](https://github.com/swoval/swoval) instead. This implementation no longer caches the watched file trees, and Metals consumes smaller amount of memory.
+Previously, Metals consumed a huge amount of memory for file watchers in large projects, especially on macOS.
+Now, Metals uses a memory-efficient way to watch files to detect changes and consumes less memory.
 
-For more details, see the original PR: [\#3758](https://github.com/scalameta/metals/pull/3758)
+For more technical details, see the original PR: [\#3758](https://github.com/scalameta/metals/pull/3758).
 
-## (Scala3) Show scaladoc on hover for Scala 3 project
+## [Scala3] Show scaladoc on hover for Scala 3 project
 Now, Metals shows the scaladoc on hover for Scala3 project. (Before this release, Metals unable to show the scaladoc for the symbols from third-party modules).
 
 ![hover-scala3](https://i.imgur.com/Svzq5DD.png)
 
-### (Scala3) Support `completionItem/resolve`
+### [Scala3] Support `completionItem/resolve`
 Now, in Scala 3 we get scaladoc and shows default values when moving accross completions. 
 
 ![completion-item-resolve](https://i.imgur.com/Tz6AOsx.gif)
