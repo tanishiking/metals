@@ -11,11 +11,11 @@ We're happy to announce the release of Metals v0.11.6, which
 <tbody>
   <tr>
     <td>Commits since last release</td>
-    <td align="center">119</td>
+    <td align="center">148</td>
   </tr>
   <tr>
     <td>Merged PRs</td>
-    <td align="center">46</td>
+    <td align="center">48</td>
   </tr>
     <tr>
     <td>Contributors</td>
@@ -45,12 +45,18 @@ the community.
 Check out [https://scalameta.org/metals/](https://scalameta.org/metals/), and
 give Metals a try!
 
-
 ## Reduce file watcher memory usage
 Previously, Metals consumed a huge amount of memory for file watchers in large projects, especially on macOS.
 Now, Metals uses a memory-efficient way to watch files to detect changes and consumes less memory.
 
 For more technical details, see the original PR: [\#3758](https://github.com/scalameta/metals/pull/3758).
+
+## [Scala3] Override Completions
+Override completions for Scala3 is available with Metals 0.11.6!
+
+Now, it's possible to implement methods from the super class quite easily in Scala3.
+
+![override-completion](https://i.imgur.com/Go3sMxy.gif)
 
 ## [Scala3] Show scaladoc on hover for Scala 3 project
 Now, Metals shows the scaladoc on hover for Scala3 project. (Before this release, Metals unable to show the scaladoc for the symbols from third-party modules).
@@ -100,35 +106,40 @@ Previously, when we invoke implement all completion and code action, Metals fill
 ## Support for Scala 3.1.3-RC4, 3.1.3-RC3
 Metals 0.11.6 supports Scala 3.1.3-RC3 and RC4.
 
-
 ## Contributors
 
 Big thanks to everybody who contributed to this release or reported an issue!
 
 ```
 $ git shortlog -sn --no-merges v0.11.5..v0.11.6
-    14	Scala Steward
+    34	Rikito Taniguchi
     14	Tomasz Godzik
+    14	Scala Steward
     10	zmerr
-     8	Vadim Chelyshov
-     7	Rikito Taniguchi
-     5	Pavol Vidlička
+     9	Vadim Chelyshov
      5	Kamil Podsiadlo
-     4	Arman Bilge
+     5	Pavol Vidlička
      4	ckipp01
+     4	Arman Bilge
      2	Ian Tabolt
-     1	tgodzik
      1	Arthur McGibbon
+     1	tgodzik
 ```
 
 ## Merged PRs
 
-## [v0.11.6](https://github.com/scalameta/metals/tree/v0.11.6) (2022-05-26)
+## [v0.11.6](https://github.com/scalameta/metals/tree/v0.11.6) (2022-05-27)
 
 [Full Changelog](https://github.com/scalameta/metals/compare/v0.11.5...v0.11.6)
 
 **Merged pull requests:**
 
+- (scala3) Override completions
+  [\#3897](https://github.com/scalameta/metals/pull/3897)
+  ([tanishiking](https://github.com/tanishiking))
+- actions: return release job lock
+  [\#3944](https://github.com/scalameta/metals/pull/3944)
+  ([dos65](https://github.com/dos65))
 - Fix SBT version check in Doctor
   [\#3946](https://github.com/scalameta/metals/pull/3946)
   ([iantabolt](https://github.com/iantabolt))
