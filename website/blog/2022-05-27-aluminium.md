@@ -7,6 +7,12 @@ authorImageURL: https://github.com/tanishiking.png
 
 We're happy to announce the release of Metals v0.11.6, which 
 
+- reduce memory usage in large projects
+- add override completion for Scala3
+- improve scaladoc support both in Scala2 and Scala3
+- provide better UX in test explorer
+- support for Scala 3.1.3-RC3 and RC4
+
 <table>
 <tbody>
   <tr>
@@ -22,17 +28,11 @@ We're happy to announce the release of Metals v0.11.6, which
     <td align="center">12</td>
   </tr>
   <tr>
-    <td>Closed issues</td>
-    <td align="center"></td>
-  </tr>
-  <tr>
     <td>New features</td>
-    <td align="center"></td>
+    <td align="center">7</td>
   </tr>
 </tbody>
 </table>
-
-For full details: https://github.com/scalameta/metals/milestone/<num>?closed=1
 
 Metals is a language server for Scala that works with VS Code, Vim, Emacs and
 Sublime Text. Metals is developed at the
