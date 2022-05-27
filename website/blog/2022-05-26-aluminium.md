@@ -62,12 +62,35 @@ Now, in Scala 3 we get scaladoc and shows default values when moving accross com
 
 ![completion-item-resolve](https://i.imgur.com/Tz6AOsx.gif)
 
+
 ## Show parent scaladoc if implementation is returning empty
 
-## Show scaladocs for signature help
+Scaladocs can be inspected whenever you hover, use a completion or signature help. Up until recently we only showed you the documentation if the exact method you are using had the scaladocs written, which meant that if you overrode a method and didn't add the scaladoc comments again we would not show you any documentation. One example of such method could `headOption` on a `List`.
+
+ From this release we will also search the parent method in case the current method's scaladoc are empty. 
+
+## [Scala 3] Show scaladocs for signature help
+
+As mentioned in the previous paragraph, Metals can show you documentation in three different places. That, however, was true only for Scala 2 previously. In this release, we will now show you proper documentation whenever invoking signature help.
+
+As a remainder, signature help is used to indicate what parameters can be used in a method. It should pop up automatically after writing `(`, but you can also invoke it manually. In VS Code that takes the form of `editor.action.triggerParameterHints` command, which can also be bound to a shortcut and by default is.
 
 
-## Test explorer searches for test methods in parent classes
+## [MUnit] Test Explorer can find helper methods from parent classes
+
+MUnit allows to use [helper functions](https://scalameta.org/munit/docs/tests.html#declare-tests-inside-a-helper-function) when declaring  tests. Very often those helper methods are extracted to some parent classes which are extended by many test suites.  
+Now, Metals can find usages of those helper methods and display them in Test Explorer.  
+
+This feature is available for Bloop and SBT 1.7.0-M2 or later.
+
+![MUnit-helper-methods](https://imgur.com/GGRDpXA.gif)
+
+## Support Cats Effect stacktraces in stacktrace analyzer
+
+Cats Effect offers [asynchronous stack tracing](https://typelevel.org/cats-effect/docs/tracing#asynchronous-stack-tracing) which augments exceptions with additional information.  
+Now, Stacktrace Analyzer is able to recognize CE's stacktraces and provide link to location in code. Say no to tedious debugging when you have only stacktrace from logs!
+
+![cats-effect-stacktraces](https://imgur.com/5fMvcYd.gif)
 
 
 ## Improve implement all completion and code action
@@ -84,7 +107,7 @@ Big thanks to everybody who contributed to this release or reported an issue!
 
 ```
 $ git shortlog -sn --no-merges v0.11.5..v0.11.6
-14	Scala Steward
+    14	Scala Steward
     14	Tomasz Godzik
     10	zmerr
      8	Vadim Chelyshov
