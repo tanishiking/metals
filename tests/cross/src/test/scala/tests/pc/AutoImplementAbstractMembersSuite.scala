@@ -770,6 +770,74 @@ class AutoImplementAbstractMembersSuite extends BaseCodeActionSuite {
   )
 
   checkEdit(
+    "tab-indent-a".tag(IgnoreScala2), // TODO scala2
+    s"""|package a
+        |
+        |object A {
+        |\ttrait Base {
+        |\t\tdef foo(x: Int): Int
+        |\t\tdef bar(x: String): String
+        |\t}
+        |
+        |\tclass <<Concrete>> extends Base {
+        |\t\t\tdef foo(x: Int): Int = x
+        |\t}
+        |
+        |}
+        |""".stripMargin,
+    s"""|package a
+        |
+        |object A {
+        |\ttrait Base {
+        |\t\tdef foo(x: Int): Int
+        |\t\tdef bar(x: String): String
+        |\t}
+        |
+        |\tclass Concrete extends Base {
+        |
+        |\t\t\toverride def bar(x: String): String = ???
+        |
+        |\t\t\tdef foo(x: Int): Int = x
+        |\t}
+        |
+        |}
+        |""".stripMargin
+  )
+
+  checkEdit(
+    "tab-indent-default".tag(IgnoreScala2), // TODO scala2
+    s"""|package a
+        |
+        |object A {
+        |\ttrait Base {
+        |\t\tdef foo(x: Int): Int
+        |\t\tdef bar(x: String): String
+        |\t}
+        |
+        |\tclass <<Concrete>> extends Base {}
+        |
+        |}
+        |""".stripMargin,
+    s"""|package a
+        |
+        |object A {
+        |\ttrait Base {
+        |\t\tdef foo(x: Int): Int
+        |\t\tdef bar(x: String): String
+        |\t}
+        |
+        |\tclass Concrete extends Base {
+        |
+        |\t\toverride def bar(x: String): String = ???
+        |
+        |\t\toverride def foo(x: Int): Int = x
+        |\t}
+        |
+        |}
+        |""".stripMargin
+  )
+
+  checkEdit(
     "braceless-basic".tag(IgnoreScala2),
     """|package a
        |

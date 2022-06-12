@@ -35,7 +35,10 @@ import dotty.tools.dotc.util.Spans.Span
 import org.eclipse.{lsp4j as l}
 
 object OverrideCompletions:
-  private val DefaultIndent = 2
+  private val DefaultIndentSpace = 2
+  private val DefaultIndentTab = 1
+  def defaultIndent(tabIndent: Boolean) =
+    if tabIndent then DefaultIndentTab else DefaultIndentSpace
 
   /**
    * @param td A surrounded type definition being complete
@@ -125,6 +128,7 @@ object OverrideCompletions:
       search: SymbolSearch,
       config: PresentationCompilerConfig
   ) =
+
     object FindTypeDef:
       def unapply(path: List[Tree]): Option[TypeDef] = path match
         // new Iterable[Int] {}
@@ -164,6 +168,7 @@ object OverrideCompletions:
     )
     val implementAll = implementAllFor(
       indexedContext,
+      params.text,
       search,
       autoImportsGen,
       config
@@ -179,6 +184,7 @@ object OverrideCompletions:
 
   private def implementAllFor(
       indexedContext: IndexedContext,
+      text: String,
       search: SymbolSearch,
       autoImports: AutoImportsGenerator,
       config: PresentationCompilerConfig
@@ -199,7 +205,7 @@ object OverrideCompletions:
       // |  class FooImpl extends Foo {
       // |  }
       // ```
-      val necessaryIndent = inferIndent(
+      val (necessaryIndent, tabIndent) = inferIndent(
         source.lineToOffset(td.sourcePos.line),
         text
       )
@@ -216,14 +222,18 @@ object OverrideCompletions:
       val numIndent =
         decls.headOption
           .map { decl =>
-            inferIndent(source.lineToOffset(decl.sourcePos.line), text)
+            inferIndent(source.lineToOffset(decl.sourcePos.line), text)._1
           }
-          .getOrElse(necessaryIndent + DefaultIndent)
-      val indent = " " * numIndent
+          .getOrElse {
+            val additionalIndent = defaultIndent(tabIndent)
+            necessaryIndent + additionalIndent
+          }
+      val indentChar = if tabIndent then "\t" else " "
+      val indent = indentChar * numIndent
       val lastIndent =
         if (td.sourcePos.startLine == td.sourcePos.endLine) ||
           shouldCompleteBraces
-        then "\n" + " " * necessaryIndent
+        then "\n" + indentChar * necessaryIndent
         else ""
       (indent, indent, lastIndent)
     end calcIndent
@@ -251,8 +261,6 @@ object OverrideCompletions:
 
     if edits.isEmpty then Nil
     else
-      val text = indexedContext.ctx.source.content.mkString
-
       // A list of declarations in the class/object to implement
       val decls = td.tpe.decls.toList
         .filter(sym =>
@@ -283,6 +291,7 @@ object OverrideCompletions:
           td.sourcePos.withSpan(span)
         )
       val editPos = posFromDecls.getOrElse(inferEditPosition(text, td))
+      println(editPos.toLSP)
 
       val (start, last) =
         val (startNL, lastNL) =
@@ -406,9 +415,10 @@ object OverrideCompletions:
       .map { offset =>
         td.sourcePos.span.withStart(offset + 1).withEnd(offset + 1)
       }
-      .getOrElse(
-        td.sourcePos.span.withStart(td.span.end)
-      )
+      .getOrElse {
+        val offset = td.span.end
+        td.sourcePos.span.withStart(offset).withEnd(offset)
+      }
     td.sourcePos.withSpan(span)
   end inferEditPosition
 
@@ -428,10 +438,18 @@ object OverrideCompletions:
    *
    * @param lineOffset the offset position of the beginning of the line
    */
-  private def inferIndent(lineOffset: Int, text: String): Int =
+  private def inferIndent(lineOffset: Int, text: String): (Int, Boolean) =
+    var tabIndent = false
     var i = 0
-    while lineOffset + i < text.length && text.charAt(lineOffset + i) == ' ' do
-      i += 1
-    i
+    while lineOffset + i < text.length && {
+        val char = text.charAt(lineOffset + i)
+        if char == '\t' then
+          tabIndent = true
+          true
+        else char == ' '
+      }
+    do i += 1
+    (i, tabIndent)
+  end inferIndent
 
 end OverrideCompletions
