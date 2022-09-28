@@ -80,7 +80,7 @@ object ImportedBuild {
       javacOptions <- conn.buildTargetJavacOptions(
         new JavacOptionsParams(ids)
       )
-      sources <- conn.buildTargetSources(new SourcesParams(ids))
+      sources0 <- conn.buildTargetSources(new SourcesParams(ids))
       dependencySources <- conn.buildTargetDependencySources(
         new DependencySourcesParams(ids)
       )
@@ -88,6 +88,26 @@ object ImportedBuild {
         new WrappedSourcesParams(ids)
       )
     } yield {
+      val wrappedSourceItems = wrappedSources.getItems().asScala.toList
+      val sources = if (wrappedSourceItems.nonEmpty) {
+        val wrappedSourceUris: Set[String] = wrappedSourceItems
+          .flatMap(item => item.getSources().asScala.map(item => item.getUri()))
+          .toSet
+        val newItems = sources0
+          .getItems()
+          .asScala
+          .map(sourceItem => {
+            val wrappeds = sourceItem
+              .getSources()
+              .asScala
+              .filter(item => wrappedSourceUris.contains(item.getUri()))
+            sourceItem.setSources(wrappeds.asJava)
+            sourceItem
+          })
+        sources0.setItems(newItems.asJava)
+        sources0
+      } else sources0
+
       ImportedBuild(
         workspaceBuildTargets,
         scalacOptions,
